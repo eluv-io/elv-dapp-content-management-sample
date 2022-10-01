@@ -2,7 +2,7 @@
 // for explicitness
 module.exports = {
   quoteProps: 'as-needed',
-  singleQuote: true,
+  singleQuote: false,
   tabWidth: 2,
-  trailingComma: 'all',
+  trailingComma: 'none',
 };

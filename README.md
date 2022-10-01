@@ -1,53 +1,61 @@
-# MetaMask Test Dapp
 
-This is a simple test dapp for use in MetaMask e2e tests and manual QA.
 
-Currently hosted [here](https://metamask.github.io/test-dapp/).
+# Eluvio MetaMask Content Management Sample
 
-## Usage
+This is a sample test dapp illustrating Eluvio Fabric Content Management using 
+MetaMask alongside the elv-client-js lib.
 
-If you wish to use this dapp in your e2e tests, install this package and set up a script of e.g. the following form:
-
-```shell
-static-server node_modules/@metamask/test-dapp/dist --port 9011
-```
-
-## Contributing
+It is forked from the Metamask [Test Dapp](https://github.com/MetaMask/test-dapp).
+which is hosted [here](https://metamask.github.io/test-dapp/).
 
 ### Setup
 
 - Install [Node.js](https://nodejs.org) version 12
   - If you are using [nvm](https://github.com/creationix/nvm#installation) (recommended) running `nvm use` will automatically choose the right node version for you.
 - Install [Yarn v1](https://yarnpkg.com/en/docs/install)
+  - e.g. `npm install --global yarn`
 - Run `yarn setup` to install dependencies and run any required post-install scripts
   - **Warning:** Do not use the `yarn` / `yarn install` command directly. Use `yarn setup` instead. The normal install command will skip required post-install scripts, leaving your development environment in an invalid state.
+- Run `npm install`
 
-### Testing and Linting
+### Run
 
-Run `yarn lint` to run the linter, or run `yarn lint:fix` to run the linter and fix any automatically fixable issues.
+After successful setup:
+- `npm run start`
+- open http://localhost:9011/
 
-This package has no tests.
+### Updating content with ElvClient
 
-### Deploying
+- Add either the Eluvio demov3 and/or main network to your metamask
+  - Network name: Eluvio Content Fabric DemoV3
+  - RPC URL: https://host-76-74-91-17.contentfabric.io/eth/
+  - Chain ID: 955210
+  - Currency Symbol: ELV
 
-After merging or pushing to `main`, please run `yarn deploy` in the package root directory if the contents of the `dist/` directory have changed.
+- In the matching Eluvio Content Fabric Browser:
+  - Get your private key associated with the network, and add that account to your MetaMask
+  - Verify your account is in the proper Content Admin Access Group
+  - Select a content object inside a library to edit
 
-### Development
-
-#### Elements Must Be Selectable by XPath
-
-All HTML elements should be easily selectable by XPath.
-This means that appearances can be misleading.
-For example, consider this old bug:
-
-```html
-<button
-  class="btn btn-primary btn-lg btn-block mb-3"
-  id="approveTokensWithoutGas"
-  disabled
->
-  Approve Tokens Without Gas
-</button>
+- In the local source code `src/index.js`:
+  - Change these constants to match your object:
+```
+    const libraryId = 'ilib3MUNGcWxTNmK2WCJ5HYCvpxdSfFE';
+    const objectId = 'iq__2gT74zSivCodXieqM3pt52tQo2E3';
+    const contentSpaceId = 'ispc3ANoVSzNA3P6t7abLR69ho5YPPZU';
 ```
 
-This appears on the page as `Approve Tokens Without Gas`. In reality, the value included the whitespace on the second line, and caused XPath queries for the intended value to fail.
+- In the Eluvio MetaMask Content Management Sample:
+  - Click `Connect` to connect your account
+  - Click `eth_accounts` to verify your address
+  - Click the `update content with elv_client` button to run through a CreateEditToken, EditContentObject, and FinalizeContentObject.
+
+You'll be prompted by MetaMask plugin:
+- Confirm the Contract Interaction
+- Sign the `Eluvio Content Fabric Access Token`
+- Confirm the Second Contract Interaction
+- Verify the object's metadata now contains:
+```
+metamask_test_write: "write @ Wed Oct 05 2022 16:42:30 GMT-0700 (Pacific Daylight Time)"
+```
+
