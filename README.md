@@ -16,7 +16,6 @@ which is hosted [here](https://metamask.github.io/test-dapp/).
   - e.g. `npm install --global yarn`
 - Run `yarn setup` to install dependencies and run any required post-install scripts
   - **Warning:** Do not use the `yarn` / `yarn install` command directly. The normal install command will skip required post-install scripts, leaving your development environment in an invalid state.
-- Run `npm install`
 
 ### Run
 
