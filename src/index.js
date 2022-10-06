@@ -46,6 +46,7 @@ const initialize = async () => {
    * and return that event, which will be used to get a transaction ID to sign.
    */
   const UpdateRequest = async ({ client, objectId }) => {
+    // eslint-disable-next-line no-unused-vars
     const { isV3, accessType, abi } = await client.authClient.ContractInfo({
       id: objectId,
     });
@@ -84,8 +85,8 @@ const initialize = async () => {
     const txh = event.transactionHash;
 
     const token = {
-      txh: Buffer.from(txh.replace(/^0x/, ''), 'hex').toString('base64'), // tx hash for an updateRequest
-      adr: Buffer.from(address.replace(/^0x/, ''), 'hex').toString('base64'),
+      txh: Buffer.from(txh.replace(/^0x/u, ''), 'hex').toString('base64'), // tx hash for an updateRequest
+      adr: Buffer.from(address.replace(/^0x/u, ''), 'hex').toString('base64'),
       spc: contentSpaceId,
       lib: libraryId,
     };
@@ -104,7 +105,7 @@ const initialize = async () => {
     );
     return `atxpjc${Utils.B58(
       Buffer.concat([
-        Buffer.from(signature.replace(/^0x/, ''), 'hex'),
+        Buffer.from(signature.replace(/^0x/u, ''), 'hex'),
         Buffer.from(compressedToken),
       ]),
     )}`;
@@ -113,10 +114,11 @@ const initialize = async () => {
   /**
    * Create a manually personal_sign'd fabric token.
    */
+  // eslint-disable-next-line no-unused-vars
   const CreateManualSignedToken = async (address, spaceId, duration) => {
     const token = {
       sub: `iusr${Utils.AddressToHash(address)}`,
-      adr: Buffer.from(address.replace(/^0x/, ''), 'hex').toString('base64'),
+      adr: Buffer.from(address.replace(/^0x/u, ''), 'hex').toString('base64'),
       spc: spaceId,
       iat: Date.now(),
       exp: Date.now() + duration,
@@ -139,7 +141,7 @@ const initialize = async () => {
 
     return `acspjc${Utils.B58(
       Buffer.concat([
-        Buffer.from(signature.replace(/^0x/, ''), 'hex'),
+        Buffer.from(signature.replace(/^0x/u, ''), 'hex'),
         Buffer.from(compressedToken),
       ]),
     )}`;
@@ -354,7 +356,9 @@ const initialize = async () => {
 
   function handleEIP1559Support(supported) {
     if (supported && Array.isArray(accounts) && accounts.length >= 1) {
+      // noop
     } else {
+      // noop
     }
   }
 
