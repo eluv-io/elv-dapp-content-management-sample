@@ -2,11 +2,14 @@
 
 # Eluvio MetaMask Content Management Sample
 
-This is a sample test dapp illustrating Eluvio Fabric Content Management using 
+This is a sample test dapp illustrating Eluvio Fabric Content Management using
 MetaMask alongside the elv-client-js lib.
 
 It is forked from the Metamask [Test Dapp](https://github.com/MetaMask/test-dapp).
 which is hosted [here](https://metamask.github.io/test-dapp/).
+
+
+![screenshot](elv-mm-cm.png)
 
 ### Setup
 
