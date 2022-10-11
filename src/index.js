@@ -2,6 +2,7 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import { ethers } from 'ethers';
 import { ElvClient } from '@eluvio/elv-client-js';
 import Pako from 'pako';
+import { FileInfo } from './Files';
 
 // eslint-disable-next-line import/extensions
 const Utils = require('@eluvio/elv-client-js/src/Utils.js');
@@ -83,6 +84,7 @@ const initialize = async () => {
   }) => {
     const event = await UpdateRequest({ client, objectId });
     const txh = event.transactionHash;
+    console.log('txh', txh);
 
     const token = {
       txh: Buffer.from(txh.replace(/^0x/u, ''), 'hex').toString('base64'), // tx hash for an updateRequest
@@ -147,6 +149,117 @@ const initialize = async () => {
     )}`;
   };
 
+  // general path:
+  // CreateObject
+  // UploadFile
+  // ProductionMaster.init
+
+  const info = async (client, libraryId, objectId) => {
+    console.log(`Getting info for library ${libraryId}...`);
+
+    // const libResponse = await client.ContentLibrary({ libraryId, objectId });
+    // const contractMetadata = {}; // libResponse.meta;
+    // const objectId = libResponse.qid;
+
+    const objResponse = await client.ContentObject({ libraryId, objectId });
+    console.log(`objResponse`, objResponse);
+    const latestHash = objResponse.hash;
+    const { type } = objResponse;
+
+    const metadata = await client.ContentObjectMetadata({
+      libraryId,
+      objectId,
+    });
+    console.log(`metadata`, metadata);
+
+    return {
+      latestHash,
+      metadata,
+      objectId,
+      type,
+    };
+  };
+
+  const Ingest = async (client, libraryId, contentSpaceId) => {
+    // const libInfo = await info(client, libraryId, objectId);
+    const type =
+      'hq__HGpLJVDkeCNyz6k1FVXhotgrnYrgARuhafhjgCn7jBvA5avGgNEf57q1J5sd5diVzru6JG5KvD';
+    const encrypt = false;
+
+    const callback = (progress) => {
+      Object.keys(progress)
+        .sort()
+        .forEach((filename) => {
+          const { uploaded, total } = progress[filename];
+          const percentage =
+            total === 0
+              ? '100.0%'
+              : `${((100 * uploaded) / total).toFixed(1)}%`;
+          console.log(`${filename}: ${percentage}`);
+        });
+    };
+
+    client.ToggleLogging(true);
+    console.log('CreateContentObject');
+    const { contractAddress, transactionHash } =
+      await client.authClient.CreateContentObject({
+        libraryId,
+        options: type ? { type } : {},
+      });
+    console.log('contractAddress', contractAddress);
+    const newObjectId = "iq__" + client.utils.AddressToHash(contractAddress);
+    console.log('newObjectId', newObjectId);
+
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+
+    const editToken = await CreateEditToken({
+      client,
+      contentSpaceId,
+      libraryId,
+      objectId: newObjectId,
+      address: walletAddress,
+    });
+    client.SetStaticToken({ token: editToken });
+    console.log('editToken', editToken);
+
+    try {
+      const res = await client.EditContentObject({
+        libraryId,
+        objectId: newObjectId,
+      });
+      console.log('EDIT', res);
+
+      // await client.MergeMetadata({
+      //   libraryId,
+      //   objectId,
+      //   writeToken: res.write_token,
+      //   metadata: { metamask_test_write: `write @ ${Date()}` },
+      //   metadataSubtree: '/',
+      // });
+      //
+      // const fin = await client.FinalizeContentObject({
+      //   libraryId,
+      //   objectId,
+      //   writeToken: res.write_token,
+      // });
+      // console.log('FIN', fin);
+
+      const fileInfo = await FileInfo('', ['BigBuckBunny_4k.video.00001.mp4']);
+
+      console.log('UploadFiles');
+      await client.UploadFiles({
+        libraryId,
+        objectId: newObjectId,
+        writeToken: res.write_token,
+        fileInfo,
+        callback,
+        encryption: encrypt ? 'cgck' : 'none',
+      });
+    } catch (e) {
+      console.log('err', e);
+    }
+  };
+
   /**
    * Setup ElvClient and run through a CreateEditToken, EditContentObject,
    * and FinalizeContentObject.
@@ -195,7 +308,16 @@ const initialize = async () => {
     });
     console.log('editToken', editToken);
 
-    client.SetStaticToken({ token: editToken });
+    // client.SetStaticToken({ token: editToken });
+
+    try {
+      console.log('trying ingest');
+      const i = await Ingest(client, libraryId, contentSpaceId);
+      console.log('ingest', i);
+    } catch (e) {
+      console.log('err', e);
+    }
+    return client;
 
     try {
       const res = await client.EditContentObject({
