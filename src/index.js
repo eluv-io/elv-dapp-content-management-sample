@@ -154,32 +154,6 @@ const initialize = async () => {
   // UploadFile
   // ProductionMaster.init
 
-  const info = async (client, libraryId, objectId) => {
-    console.log(`Getting info for library ${libraryId}...`);
-
-    // const libResponse = await client.ContentLibrary({ libraryId, objectId });
-    // const contractMetadata = {}; // libResponse.meta;
-    // const objectId = libResponse.qid;
-
-    const objResponse = await client.ContentObject({ libraryId, objectId });
-    console.log(`objResponse`, objResponse);
-    const latestHash = objResponse.hash;
-    const { type } = objResponse;
-
-    const metadata = await client.ContentObjectMetadata({
-      libraryId,
-      objectId,
-    });
-    console.log(`metadata`, metadata);
-
-    return {
-      latestHash,
-      metadata,
-      objectId,
-      type,
-    };
-  };
-
   const Ingest = async (client, libraryId, contentSpaceId) => {
     // const libInfo = await info(client, libraryId, objectId);
     const type =
@@ -237,13 +211,6 @@ const initialize = async () => {
       //   metadataSubtree: '/',
       // });
       //
-      // const fin = await client.FinalizeContentObject({
-      //   libraryId,
-      //   objectId,
-      //   writeToken: res.write_token,
-      // });
-      // console.log('FIN', fin);
-
       const fileInfo = await FileInfo('', ['BigBuckBunny_4k.video.00001.mp4']);
 
       console.log('UploadFiles');
@@ -255,6 +222,13 @@ const initialize = async () => {
         callback,
         encryption: encrypt ? 'cgck' : 'none',
       });
+
+      const fin = await client.FinalizeContentObject({
+        libraryId,
+        objectId: newObjectId,
+        writeToken: res.write_token,
+      });
+      console.log('FIN', fin);
     } catch (e) {
       console.log('err', e);
     }
